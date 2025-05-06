@@ -1,50 +1,19 @@
-# Welcome to your Expo app 👋
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## Тестовое задание для компании Аэродин
+Ревью
+Проект Cursor AI сам по себе не плох на перспективу, приложение создано с его помощью.
+Но как можно заметить AI добавляет не только дублирующий, громоздкий код, нот иногда и создает по несколько одинаковых файлов в разных папках.
+Отражено в текущем коде - несколько colors, несколько api, дублирующиеся стили, дублирующиеся запросы к АПИ. 
+Кажется ПО ускоряет разработку,но потом приходится тратить много времени на свои исправление и внесения изменений. Для какого то старта это ПО действительно неплохое, поможет создать приложение даже тому, кто впервые настраивает react-native будучи знакомым с React.
+# Подитог:
+```sh
+Работать с cursor AI понравилось, пока что проблема одна - ограниченность контекста AI помошников. В разработке такое приложение будет действительно нехило помогать и ускорять разработку, если верно научиться им пользоваться!
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+# Для запуска проекта локально
 
-## Learn more
+Заполнить .env по примеру .env.template(по желанию)
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Запустить проект
+```bash
+docker compose up --build
+```
