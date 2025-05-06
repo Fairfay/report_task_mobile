@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { getValidChipColors } from '@/lib/colors';
 
 interface Transport {
@@ -55,6 +56,12 @@ interface DeliveryDetails {
   file?: number[];
 }
 
+interface FileDetail {
+  id: number;
+  file: string;
+  file_name: string;
+}
+
 const techStates = [
   { label: 'Исправно', value: true, color: '#176c3a' },
   { label: 'Неисправно', value: false, color: '#a31313' },
@@ -100,8 +107,9 @@ export default function DeliveryDetailScreen() {
   const [isRefDataLoading, setIsRefDataLoading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<FileResponse[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [fileDetails, setFileDetails] = useState<FileResponse[]>([]);
-  const [deletingFileId, setDeletingFileId] = useState<number | null>(null); // State to track deleting file
+  const [fileDetails, setFileDetails] = useState<FileDetail[]>([]);
+  const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<
@@ -214,7 +222,7 @@ export default function DeliveryDetailScreen() {
                     api.getFileById(fileId, logout)
                 );
                 const fetchedFiles = await Promise.all(filePromises);
-                setFileDetails(fetchedFiles);
+                setFileDetails(fetchedFiles.map(f => ({ id: f.id, file: f.file, file_name: f.file_name })));
                 console.log("Fetched file details:", fetchedFiles);
             } catch (fileError) {
                  console.error("Error fetching file details:", fileError);
@@ -611,6 +619,49 @@ export default function DeliveryDetailScreen() {
     );
   };
 
+  const handleDownloadAndShareFile = async (fileUrl: string, originalFileName: string) => {
+    setIsDownloading(true);
+    // Sanitize file name and add timestamp to ensure uniqueness
+    const safeFileName = originalFileName.replace(/[^a-zA-Z0-9.]/g, '_');
+    const localUri = `${FileSystem.documentDirectory}${Date.now()}_${safeFileName}`;
+
+    try {
+      const { uri: downloadedUri } = await FileSystem.downloadAsync(fileUrl, localUri);
+      console.log('Finished downloading to:', downloadedUri);
+      setIsDownloading(false);
+
+      Alert.alert(
+        "Успешно",
+        `Файл ${originalFileName} загружен.`, 
+        [
+          { text: "OK" },
+          {
+            text: "Поделиться",
+            onPress: async () => {
+              if (!(await Sharing.isAvailableAsync())) {
+                Alert.alert('Ошибка', 'Обмен файлами недоступен на вашем устройстве.');
+                return;
+              }
+              try {
+                await Sharing.shareAsync(downloadedUri, {
+                  dialogTitle: `Поделиться файлом: ${originalFileName}`,
+                });
+              } catch (sharingError) {
+                console.error('Sharing error:', sharingError);
+                Alert.alert('Ошибка', 'Не удалось поделиться файлом.');
+              }
+            }
+          }
+        ],
+        { cancelable: false }
+      );
+    } catch (downloadError) {
+      console.error("Download error:", downloadError);
+      setIsDownloading(false);
+      Alert.alert("Ошибка загрузки", `Не удалось загрузить файл: ${originalFileName}.`);
+    }
+  };
+
   if (isLoading) {
     return <View style={[styles.container, styles.centerContent]}><ActivityIndicator size="large" color="#fff" /><Text style={styles.loadingText}>Загрузка данных...</Text></View>;
   }
@@ -802,8 +853,8 @@ export default function DeliveryDetailScreen() {
                         }
                         
                         const localUri = FileSystem.documentDirectory + fileName;
-                        console.log(`Downloading to persistent app storage: ${localUri}`);
-                        Alert.alert("Загрузка", `Начинается загрузка файла: ${fileName}`);
+                        // console.log(`Downloading to persistent app storage: ${localUri}`);
+                        // Alert.alert("Загрузка", `Начинается загрузка файла: ${fileName}`);
 
                         try {
                           const { uri: downloadedUri } = await FileSystem.downloadAsync(fullFileUrl, localUri);
@@ -816,7 +867,7 @@ export default function DeliveryDetailScreen() {
                                 { text: "OK" },
                                 {
                                     text: "Поделиться",
-                                    onPress: () => Share.share({ url: downloadedUri, title: fileName })
+                                    onPress: () => handleDownloadAndShareFile(fullFileUrl, fileName)
                                 }
                             ]
                            );
